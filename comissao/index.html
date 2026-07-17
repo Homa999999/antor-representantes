@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Antor - Comissão">
+    <title>Antor | Comissão</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="comissao.css">
+</head>
+<body>
+
+    <div class="bg-shapes" aria-hidden="true">
+        <span class="shape shape-1"></span>
+        <span class="shape shape-2"></span>
+    </div>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="../home/">
+                <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo brand-logo--horizontal">
+                <img src="../assets/logo-vertical.png" alt="" class="brand-logo brand-logo--vertical" aria-hidden="true">
+            </a>
+            <nav class="sidebar-nav" aria-label="Navegação principal">
+                <a href="../home/"><i class="fa-solid fa-gauge-high"></i><span>Painel</span></a>
+                <a href="../pedidos/"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+                <a href="../financeiro/"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></a>
+                <a href="../comissao/" class="active"><i class="fa-solid fa-percent"></i><span>Comissão</span></a>
+            </nav>
+        </aside>
+
+        <main class="main main--wide">
+
+            <div class="page-top animate-in">
+                <h1>Minha comissão</h1>
+            </div>
+
+            <div class="card card-filters animate-in delay-2">
+                <div class="filtros-titulo">
+                    <i class="fa-solid fa-filter"></i>
+                    Filtros de pesquisa
+                </div>
+                <form class="filtros" id="form-filtros">
+
+                    <div class="filtros-grid-rep-periodo">
+                        <div class="campo-filtro">
+                            <label for="representante">Representante</label>
+                            <div class="input-busca">
+                                <input type="text" id="representante" name="representante" placeholder="Buscar representante...">
+                                <button type="button" class="btn-busca" aria-label="Buscar representante">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="campo-filtro">
+                            <label>Período</label>
+                            <div class="periodo-ate">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="2026-07-01">
+                                <span>Até</span>
+                                <input type="date" id="periodo-fim" name="periodo_fim" value="2026-07-31">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filtros-acoes">
+                        <button type="submit" class="btn-pesquisar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Pesquisar
+                        </button>
+                        <button type="button" class="btn-imprimir" id="btn-imprimir">
+                            <i class="fa-solid fa-print"></i>
+                            Imprimir
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card card-resultados animate-in delay-3">
+                <div class="resultados-toolbar">
+                    <h2><i class="fa-solid fa-file-invoice"></i> Resultados</h2>
+                    <span id="comissao-registros">0 registros</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="comissao-table">
+                        <thead>
+                            <tr>
+                                <th>Representante</th>
+                                <th>Período</th>
+                                <th>Comissão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comissao-tbody">
+                        </tbody>
+                    </table>
+                    <div class="resultados-empty" id="resultados-empty">
+                    <i class="fa-solid fa-percent"></i>
+                    <p>Nenhum registro encontrado.</p>
+                    <small>Os dados serão carregados do banco de dados.</small>
+                    </div>
+                </div>
+                <div class="resultados-footer">
+                    <div class="footer-info">
+                        <i class="fa-solid fa-percent"></i>
+                        <span id="comissao-count">0 registro(s).</span>
+                    </div>
+                    <div class="total-wrap">
+                        <span class="total-label">Total</span>
+                        <span class="total-valor" id="comissao-total">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../assets/api.js"></script>
+    <script src="../assets/list-utils.js"></script>
+    <script src="../assets/app.js" defer></script>
+    <script src="comissao.js" defer></script>
+
+</body>
+</html>

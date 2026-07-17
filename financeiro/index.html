@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Antor - Financeiro">
+    <title>Antor | Financeiro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="financeiro.css">
+</head>
+<body>
+
+    <div class="bg-shapes" aria-hidden="true">
+        <span class="shape shape-1"></span>
+        <span class="shape shape-2"></span>
+    </div>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="../home/">
+                <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo brand-logo--horizontal">
+                <img src="../assets/logo-vertical.png" alt="" class="brand-logo brand-logo--vertical" aria-hidden="true">
+            </a>
+            <nav class="sidebar-nav" aria-label="Navegação principal">
+                <a href="../home/"><i class="fa-solid fa-gauge-high"></i><span>Painel</span></a>
+                <a href="../pedidos/"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+                <a href="../financeiro/" class="active"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></a>
+                <a href="../comissao/"><i class="fa-solid fa-percent"></i><span>Comissão</span></a>
+            </nav>
+        </aside>
+
+        <main class="main main--wide">
+
+            <div class="page-top animate-in">
+                <h1>Meu financeiro</h1>
+            </div>
+
+            <div class="card card-filters animate-in delay-2">
+                <div class="filtros-titulo">
+                    <i class="fa-solid fa-filter"></i>
+                    Filtros de pesquisa
+                </div>
+                <form class="filtros" id="form-filtros">
+
+                    <div class="filtros-grid filtros-grid-3">
+                        <div class="campo-filtro">
+                            <label for="situacao">Situação</label>
+                            <select id="situacao" name="situacao">
+                                <option value="abertas" selected>Abertas</option>
+                                <option value="fechadas">Fechadas</option>
+                                <option value="todas">Todas</option>
+                            </select>
+                        </div>
+                        <div class="campo-filtro">
+                            <label for="tipo-data">Data de vencimento</label>
+                            <select id="tipo-data" name="tipo_data">
+                                <option value="vencimento" selected>Data de Vencimento</option>
+                                <option value="emissao">Data de Emissão</option>
+                                <option value="pagamento">Data de Pagamento</option>
+                            </select>
+                        </div>
+                        <div class="campo-filtro">
+                            <label>Período</label>
+                            <div class="periodo-ate">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="1899-01-01">
+                                <span>Até</span>
+                                <input type="date" id="periodo-fim" name="periodo_fim" value="2999-12-31">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filtros-grid filtros-grid-1">
+                        <div class="campo-filtro">
+                            <label for="cliente">Selecione cliente</label>
+                            <div class="input-busca">
+                                <input
+                                    type="text"
+                                    id="cliente"
+                                    name="cliente"
+                                    placeholder="Informe um cliente, se não sua pesquisa não será realizada."
+                                >
+                                <button type="button" class="btn-busca" aria-label="Buscar cliente">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filtros-acoes">
+                        <button type="submit" class="btn-pesquisar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Pesquisar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card card-table animate-in delay-3">
+                <div class="table-toolbar">
+                    <h2><i class="fa-solid fa-table-list"></i> Resultados</h2>
+                    <span id="financeiro-registros">0 registros</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="financeiro-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable">Emissão <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Duplicata <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Vencimento <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Valor <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Saldo <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Pagamento <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Pago <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Atraso <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="financeiro-tbody">
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="table-empty">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                        <p>Nenhum registro encontrado.</p>
+                        <small>Os dados serão carregados do banco de dados.</small>
+                    </div>
+                </div>
+                <div class="table-totais">
+                    <span class="totais-label">Totais:</span>
+                    <div class="totais-grid">
+                        <div class="total-item">
+                            <span>Valor</span>
+                            <strong id="total-valor">R$ 0,00</strong>
+                        </div>
+                        <div class="total-item">
+                            <span>Saldo</span>
+                            <strong id="total-saldo">R$ 0,00</strong>
+                        </div>
+                        <div class="total-item">
+                            <span>Pago</span>
+                            <strong id="total-pago">R$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-footer">
+                    <div class="footer-info">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span id="financeiro-count">0 registro(s).</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../assets/api.js"></script>
+    <script src="../assets/list-utils.js"></script>
+    <script src="../assets/app.js" defer></script>
+    <script src="financeiro.js" defer></script>
+
+</body>
+</html>

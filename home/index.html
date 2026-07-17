@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Antor - Painel">
+    <title>Antor | Painel</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+    <div class="bg-shapes" aria-hidden="true">
+        <span class="shape shape-1"></span>
+        <span class="shape shape-2"></span>
+    </div>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="../home/">
+                <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo brand-logo--horizontal">
+                <img src="../assets/logo-vertical.png" alt="" class="brand-logo brand-logo--vertical" aria-hidden="true">
+            </a>
+            <nav class="sidebar-nav" aria-label="Navegação principal">
+                <a href="../home/" class="active"><i class="fa-solid fa-gauge-high"></i><span>Painel</span></a>
+                <a href="../pedidos/"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+                <a href="../financeiro/"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></a>
+                <a href="../comissao/"><i class="fa-solid fa-percent"></i><span>Comissão</span></a>
+            </nav>
+        </aside>
+
+        <main class="main main--wide">
+
+            <div class="page-top animate-in">
+                <div class="page-top-row">
+                    <h1>Painel</h1>
+                    <button
+                        type="button"
+                        class="values-toggle"
+                        data-values-toggle
+                        aria-label="Ocultar valores"
+                        aria-pressed="false"
+                        title="Ocultar valores"
+                    >
+                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="dashboard-updated" data-widget="vendas-atualizado" hidden>
+                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                    <span data-widget="vendas-atualizado-text"></span>
+                </div>
+            </div>
+
+            <div class="home-mosaic animate-in delay-1">
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-weight-hanging"></i></div>
+                    <strong data-widget="vendas-ano-mt" data-count="0" data-format="decimal" data-suffix=" mt">0</strong>
+                    <span>Vendas ano (mt)</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <strong data-widget="vendas-ano-rs" data-count="0" data-format="currency">R$ 0</strong>
+                    <span>Vendas ano (R$)</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                    <strong data-widget="vendas-mes-mt" data-count="0" data-format="decimal" data-suffix=" mt">0</strong>
+                    <span>Vendas mês (mt)</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-coins"></i></div>
+                    <strong data-widget="vendas-mes-rs" data-count="0" data-format="currency">R$ 0</strong>
+                    <span>Vendas mês (R$)</span>
+                </div>
+
+                <div class="dash-card span-full meta-dash-card">
+                    <div class="meta-hero-glow" aria-hidden="true"></div>
+                    <div class="dash-card-head">
+                        <div>
+                            <p class="meta-eyebrow" data-widget="meta-mes">Mês atual</p>
+                            <h3>Meta de conclusão</h3>
+                            <p>Pedidos finalizados no mês</p>
+                        </div>
+                        <span class="dash-badge up" data-widget="meta-badge">0%</span>
+                    </div>
+                    <div class="donut-wrap">
+                        <div class="donut">
+                            <svg viewBox="0 0 100 100" aria-hidden="true">
+                                <defs>
+                                    <linearGradient id="donutGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffe566"/>
+                                        <stop offset="50%" stop-color="#ffcf00"/>
+                                        <stop offset="100%" stop-color="#ffb800"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle class="donut-bg" cx="50" cy="50" r="40"/>
+                                <circle class="donut-fill" cx="50" cy="50" r="40"/>
+                            </svg>
+                            <div class="donut-center">
+                                <strong data-widget="meta-percent">0%</strong>
+                                <span>meta</span>
+                            </div>
+                        </div>
+                        <div class="donut-legend">
+                            <div class="legend-item"><span class="legend-dot done"></span> <span data-widget="meta-concluidos">0 concluídos</span></div>
+                            <div class="legend-item"><span class="legend-dot pending"></span> <span data-widget="meta-abertos">0 em aberto</span></div>
+                        </div>
+                        <div class="meta-progress-inline">
+                            <div class="meta-progress-head">
+                                <span>Progresso</span>
+                                <span data-widget="meta-progress-label">0 de 0</span>
+                            </div>
+                            <div class="meta-progress-track">
+                                <div class="meta-progress-fill" data-widget="meta-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../assets/api.js"></script>
+    <script src="../assets/app.js" defer></script>
+    <script src="home.js" defer></script>
+
+</body>
+</html>

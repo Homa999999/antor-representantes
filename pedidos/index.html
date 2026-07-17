@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Antor - Pedidos">
+    <title>Antor | Pedidos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="pedidos.css">
+</head>
+<body>
+
+    <div class="bg-shapes" aria-hidden="true">
+        <span class="shape shape-1"></span>
+        <span class="shape shape-2"></span>
+    </div>
+
+    <div class="app-layout">
+
+        <aside class="sidebar">
+            <a class="sidebar-brand" href="../home/">
+                <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo brand-logo--horizontal">
+                <img src="../assets/logo-vertical.png" alt="" class="brand-logo brand-logo--vertical" aria-hidden="true">
+            </a>
+            <nav class="sidebar-nav" aria-label="Navegação principal">
+                <a href="../home/"><i class="fa-solid fa-gauge-high"></i><span>Painel</span></a>
+                <a href="../pedidos/" class="active"><i class="fa-solid fa-clipboard-list"></i><span>Pedidos</span></a>
+                <a href="../financeiro/"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></a>
+                <a href="../comissao/"><i class="fa-solid fa-percent"></i><span>Comissão</span></a>
+            </nav>
+        </aside>
+
+        <main class="main main--wide">
+
+            <div class="page-top animate-in">
+                <h1>Meus pedidos</h1>
+                <button type="button" class="btn-novo">
+                    <i class="fa-solid fa-plus"></i>
+                    Novo pedido
+                </button>
+            </div>
+
+            <div class="card card-filters animate-in delay-2">
+                <div class="filtros-titulo">
+                    <i class="fa-solid fa-filter"></i>
+                    Filtros de pesquisa
+                </div>
+                <form class="filtros" id="form-filtros">
+
+                    <div class="filtros-grid filtros-grid-1">
+                        <div class="campo-filtro">
+                            <label for="cliente">Cliente</label>
+                            <div class="input-busca">
+                                <input type="text" id="cliente" name="cliente" placeholder="Buscar cliente...">
+                                <button type="button" class="btn-busca" aria-label="Buscar cliente">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filtros-grid filtros-grid-3">
+                        <div class="campo-filtro">
+                            <label>Período</label>
+                            <div class="periodo-inputs">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="2026-07-17">
+                                <input type="date" id="periodo-fim" name="periodo_fim" value="2026-07-17">
+                            </div>
+                        </div>
+                        <div class="campo-filtro">
+                            <label for="pedido">Pedido</label>
+                            <input type="text" id="pedido" name="pedido" placeholder="Nº do pedido">
+                        </div>
+                        <div class="campo-filtro">
+                            <label for="status">Status</label>
+                            <select id="status" name="status">
+                                <option value="">Todos</option>
+                                <option value="aguard">Aguardando</option>
+                                <option value="aceito">Aceito</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filtros-grid filtros-grid-2">
+                        <div class="campo-filtro">
+                            <label for="produto">Produto</label>
+                            <div class="input-busca">
+                                <input type="text" id="produto" name="produto" placeholder="Buscar produto...">
+                                <button type="button" class="btn-busca" aria-label="Buscar produto">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="campo-filtro">
+                            <label for="cor">Cor</label>
+                            <div class="input-busca">
+                                <input type="text" id="cor" name="cor" placeholder="Buscar cor...">
+                                <button type="button" class="btn-busca" aria-label="Buscar cor">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filtros-acoes">
+                        <button type="submit" class="btn-pesquisar">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            Pesquisar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card card-table animate-in delay-3">
+                <div class="table-toolbar">
+                    <h2><i class="fa-solid fa-table-list"></i> Resultados</h2>
+                    <span id="pedidos-registros">0 registros</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="pedidos-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable">Cliente <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Comerc. <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Posse <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Ped. <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Emissão <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable">Valor <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="col-acoes">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pedidos-tbody">
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="table-empty">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>Nenhum pedido encontrado.</p>
+                        <small>Os dados serão carregados do banco de dados.</small>
+                    </div>
+                </div>
+                <div class="table-footer">
+                    <div class="footer-info">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span id="pedidos-count">0 pedido(s).</span>
+                    </div>
+                    <div class="total-wrap">
+                        <span class="total-label">Total</span>
+                        <span class="total-valor" id="pedidos-total">0,00</span>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="../assets/api.js"></script>
+    <script src="../assets/list-utils.js"></script>
+    <script src="../assets/app.js" defer></script>
+    <script src="pedidos.js" defer></script>
+
+</body>
+</html>

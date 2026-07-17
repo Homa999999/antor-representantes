@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Antor - Acesso ao sistema">
+    <title>Antor | Login</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="bg-shapes" aria-hidden="true">
+        <span class="shape shape-1"></span>
+        <span class="shape shape-2"></span>
+        <span class="shape shape-3"></span>
+    </div>
+
+    <div class="container">
+
+        <div class="header">
+            <div class="brand">
+                <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo">
+            </div>
+            <h1>Acesso ao sistema</h1>
+            <p>Entre com suas credenciais para continuar.</p>
+        </div>
+
+        <form id="form-login" novalidate>
+
+            <div class="campo">
+                <label for="usuario">
+                    <i class="fa-solid fa-envelope"></i>
+                    E-mail corporativo
+                </label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-envelope input-icon"></i>
+                    <input
+                        type="email"
+                        id="usuario"
+                        name="usuario"
+                        placeholder="seu.email@antor.com.br"
+                        autocomplete="username"
+                    >
+                </div>
+            </div>
+
+            <div class="campo">
+                <label for="senha">
+                    <i class="fa-solid fa-lock"></i>
+                    Senha
+                </label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input
+                        type="password"
+                        id="senha"
+                        name="senha"
+                        placeholder="Digite sua senha"
+                        autocomplete="current-password"
+                    >
+                    <button type="button" class="btn-toggle-senha" id="btn-toggle-senha" aria-label="Mostrar senha">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-opcoes">
+                <label class="checkbox-label" for="lembrar">
+                    <input type="checkbox" id="lembrar" name="lembrar">
+                    <span class="checkbox-custom"></span>
+                    Lembrar-me
+                </label>
+                <a href="#" class="link-esqueci" id="link-esqueci">Esqueci minha senha</a>
+            </div>
+
+            <button type="submit" id="btn-entrar">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Entrar</span>
+            </button>
+
+            <p class="login-error" id="login-error" hidden role="alert"></p>
+
+        </form>
+
+    </div>
+
+    <div class="modal-overlay" id="modal-setup" hidden aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-labelledby="modal-setup-title" aria-modal="true">
+            <button type="button" class="modal-close" id="modal-setup-close" aria-label="Fechar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="modal-icon" aria-hidden="true">
+                <i class="fa-solid fa-envelope-circle-check"></i>
+            </div>
+            <h2 id="modal-setup-title">Primeiro acesso</h2>
+            <p class="modal-message" id="modal-setup-message">
+                Informe seu e-mail para receber o código de verificação.
+            </p>
+            <p class="modal-email" id="modal-setup-email"></p>
+
+            <div id="setup-step-email" class="modal-step">
+                <form id="form-setup-email" class="modal-form" novalidate>
+                    <div class="campo">
+                        <label for="setup-email">Seu e-mail</label>
+                        <input type="email" id="setup-email" name="email" placeholder="nome@exemplo.com" autocomplete="email">
+                    </div>
+                    <p class="modal-error" id="modal-setup-error-email" hidden role="alert"></p>
+                    <button type="submit" class="btn-modal-submit" id="btn-enviar-codigo">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Enviar código
+                    </button>
+                </form>
+            </div>
+
+            <div id="setup-step-code" class="modal-step" hidden>
+            <form id="form-setup" class="modal-form" novalidate>
+                <div class="campo">
+                    <label for="setup-codigo">Código recebido</label>
+                    <input type="text" id="setup-codigo" name="codigo" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+                </div>
+                <div class="campo">
+                    <label for="setup-senha">Nova senha</label>
+                    <input type="password" id="setup-senha" name="senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                </div>
+                <div class="campo">
+                    <label for="setup-confirmar">Confirmar senha</label>
+                    <input type="password" id="setup-confirmar" name="confirmarSenha" placeholder="Repita a senha" autocomplete="new-password">
+                </div>
+                <p class="modal-error" id="modal-setup-error" hidden role="alert"></p>
+                <button type="submit" class="btn-modal-submit" id="btn-setup-submit">
+                    <i class="fa-solid fa-check"></i>
+                    <span id="btn-setup-submit-text">Definir senha e entrar</span>
+                </button>
+                <button type="button" class="btn-modal-link" id="btn-setup-reenviar">
+                    Reenviar código
+                </button>
+            </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay" aria-live="polite" aria-busy="false">
+        <div class="loading-box">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Entrando no Antor...</p>
+        </div>
+    </div>
+
+    <script src="../assets/api.js"></script>
+    <script src="script.js" defer></script>
+
+</body>
+</html>

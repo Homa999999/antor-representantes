@@ -121,7 +121,11 @@ router.post("/login", async (req, res) => {
         }
 
         if (passwordCheck.needsUpgrade) {
-            await upgradeWebPasswordHash(user.usuario_id, senha);
+            try {
+                await upgradeWebPasswordHash(user.usuario_id, senha);
+            } catch (upgradeErr) {
+                console.warn("Não foi possível atualizar hash da senha web:", upgradeErr.message);
+            }
         }
 
         if (!canAccessWebSystem(user)) {

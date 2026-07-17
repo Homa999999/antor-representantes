@@ -1,36 +1,9 @@
-function setStatCard(selector, value, { prefix = "", suffix = "", format = "" } = {}) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    el.dataset.count = String(value);
-    el.dataset.prefix = prefix;
-    el.dataset.suffix = suffix;
-    if (format) {
-        el.dataset.format = format;
-    } else {
-        delete el.dataset.format;
-    }
-    el.dataset.loaded = "";
-    renderStatCard(el);
-}
-
-const VALUES_HIDDEN_KEY = "antor_vendas_values_hidden";
-
 const VENDAS_WIDGET_SELECTORS = [
     "[data-widget='vendas-ano-mt']",
     "[data-widget='vendas-ano-rs']",
     "[data-widget='vendas-mes-mt']",
     "[data-widget='vendas-mes-rs']",
 ];
-
-function areVendasValuesHidden() {
-    const stored = sessionStorage.getItem(VALUES_HIDDEN_KEY);
-    if (stored === null) return true;
-    return stored === "1";
-}
-
-function setVendasValuesHidden(hidden) {
-    sessionStorage.setItem(VALUES_HIDDEN_KEY, hidden ? "1" : "0");
-}
 
 function maskStatValue(el) {
     const format = el.dataset.format || "";
@@ -41,10 +14,10 @@ function maskStatValue(el) {
     return "••••••";
 }
 
-function renderStatCard(el) {
+function renderStatCard(el, { animate = false } = {}) {
     if (!el) return;
 
-    if (areVendasValuesHidden()) {
+    if (AntorAPI.areVendasValuesHidden()) {
         window.cancelCounterAnimation?.(el);
         el.textContent = maskStatValue(el);
         el.classList.add("is-masked");
@@ -53,18 +26,50 @@ function renderStatCard(el) {
 
     el.classList.remove("is-masked");
 
-    if (el.dataset.count === undefined || el.dataset.count === "") return;
-
-    const value = Number(el.dataset.count || 0);
+    const value = AntorAPI.parseStatValue(el.dataset.count);
     const prefix = el.dataset.prefix || "";
     const suffix = el.dataset.suffix || "";
-    window.animateCounter(el, value, prefix, suffix);
+
+    if (el.dataset.loaded !== "1") {
+        window.renderStatFinalValue?.(el, value);
+        return;
+    }
+
+    if (animate) {
+        window.animateCounter?.(el, value, prefix, suffix);
+        return;
+    }
+
+    window.renderStatFinalValue?.(el, value);
+}
+
+function refreshVendasWidgets({ animate = false } = {}) {
+    VENDAS_WIDGET_SELECTORS.forEach((selector) => {
+        const el = document.querySelector(selector);
+        if (el) renderStatCard(el, { animate });
+    });
+}
+
+function setStatCard(selector, value, { prefix = "", suffix = "", format = "" } = {}) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+
+    el.dataset.count = String(value ?? 0);
+    el.dataset.prefix = prefix;
+    el.dataset.suffix = suffix;
+    if (format) {
+        el.dataset.format = format;
+    } else {
+        delete el.dataset.format;
+    }
+    el.dataset.loaded = "1";
+    renderStatCard(el, { animate: !AntorAPI.areVendasValuesHidden() });
 }
 
 function updateValuesToggleButton(btn) {
     if (!btn) return;
 
-    const hidden = areVendasValuesHidden();
+    const hidden = AntorAPI.areVendasValuesHidden();
     const icon = btn.querySelector("i");
 
     btn.setAttribute("aria-pressed", hidden ? "true" : "false");
@@ -77,41 +82,34 @@ function updateValuesToggleButton(btn) {
 }
 
 function toggleVendasValuesVisibility() {
-    setVendasValuesHidden(!areVendasValuesHidden());
-
-    const btn = document.querySelector("[data-values-toggle]");
-    updateValuesToggleButton(btn);
-
-    VENDAS_WIDGET_SELECTORS.forEach((selector) => {
-        const el = document.querySelector(selector);
-        if (el) renderStatCard(el);
-    });
+    AntorAPI.setVendasValuesHidden(!AntorAPI.areVendasValuesHidden());
+    updateValuesToggleButton(document.querySelector("[data-values-toggle]"));
+    refreshVendasWidgets({ animate: false });
 }
 
 function initValuesToggle() {
     const btn = document.querySelector("[data-values-toggle]");
     if (!btn) return;
 
-    localStorage.removeItem(VALUES_HIDDEN_KEY);
+    localStorage.removeItem("antor_vendas_values_hidden");
 
     updateValuesToggleButton(btn);
-    btn.addEventListener("click", toggleVendasValuesVisibility);
 
-    if (areVendasValuesHidden()) {
-        VENDAS_WIDGET_SELECTORS.forEach((selector) => {
-            const el = document.querySelector(selector);
-            if (el) renderStatCard(el);
-        });
+    if (btn.dataset.bound !== "1") {
+        btn.addEventListener("click", toggleVendasValuesVisibility);
+        btn.dataset.bound = "1";
     }
+
+    refreshVendasWidgets({ animate: false });
 }
 
 const DONUT_CIRCUMFERENCE = 251;
 
 function updateDonut(meta) {
-    const percent = Number(meta.percent || 0);
-    const concluidos = Number(meta.concluidos || 0);
-    const abertos = Number(meta.abertos || 0);
-    const total = Number(meta.total || 0);
+    const percent = Number(meta?.percent || 0);
+    const concluidos = Number(meta?.concluidos || 0);
+    const abertos = Number(meta?.abertos || 0);
+    const total = Number(meta?.total || 0);
 
     const badge = document.querySelector("[data-widget='meta-badge']");
     const center = document.querySelector("[data-widget='meta-percent']");
@@ -122,7 +120,7 @@ function updateDonut(meta) {
     const progressLabel = document.querySelector("[data-widget='meta-progress-label']");
     const progressBar = document.querySelector("[data-widget='meta-progress-bar']");
 
-    if (mes) mes.textContent = meta.mesLabel || "Mês atual";
+    if (mes) mes.textContent = meta?.mesLabel || "Mês atual";
     if (badge) badge.textContent = `${percent}%`;
     if (center) center.textContent = `${percent}%`;
     if (legendDone) legendDone.textContent = `${concluidos} concluídos`;
@@ -192,21 +190,17 @@ function updateUltimaAtualizacao(info) {
 }
 
 function applyDashboard(data) {
-    updateUltimaAtualizacao(data.vendas?.ultimaAtualizacao);
+    const vendas = data?.vendas || {};
 
-    setStatCard("[data-widget='vendas-ano-mt']", data.vendas.vendasAnoMt, { suffix: " mt", format: "decimal" });
-    setStatCard("[data-widget='vendas-ano-rs']", data.vendas.vendasAnoRs, { format: "currency" });
-    setStatCard("[data-widget='vendas-mes-mt']", data.vendas.vendasMesMt, { suffix: " mt", format: "decimal" });
-    setStatCard("[data-widget='vendas-mes-rs']", data.vendas.vendasMesRs, { format: "currency" });
+    updateUltimaAtualizacao(vendas.ultimaAtualizacao);
 
-    if (areVendasValuesHidden()) {
-        VENDAS_WIDGET_SELECTORS.forEach((selector) => {
-            const el = document.querySelector(selector);
-            if (el) renderStatCard(el);
-        });
-    }
+    setStatCard("[data-widget='vendas-ano-mt']", vendas.vendasAnoMt, { suffix: " mt", format: "decimal" });
+    setStatCard("[data-widget='vendas-ano-rs']", vendas.vendasAnoRs, { format: "currency" });
+    setStatCard("[data-widget='vendas-mes-mt']", vendas.vendasMesMt, { suffix: " mt", format: "decimal" });
+    setStatCard("[data-widget='vendas-mes-rs']", vendas.vendasMesRs, { format: "currency" });
 
-    updateDonut(data.meta);
+    updateDonut(data?.meta || {});
+    updateValuesToggleButton(document.querySelector("[data-values-toggle]"));
 }
 
 async function loadHomeDashboard() {
@@ -229,5 +223,13 @@ async function loadHomeDashboard() {
     }
 }
 
-loadHomeDashboard();
-initValuesToggle();
+function bootstrapHome() {
+    initValuesToggle();
+    loadHomeDashboard();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrapHome);
+} else {
+    bootstrapHome();
+}

@@ -76,6 +76,22 @@ function clearSession() {
     localStorage.removeItem(VALUES_HIDDEN_KEY);
 }
 
+function areVendasValuesHidden() {
+    const stored = sessionStorage.getItem(VALUES_HIDDEN_KEY);
+    if (stored === null) return true;
+    return stored === "1";
+}
+
+function setVendasValuesHidden(hidden) {
+    sessionStorage.setItem(VALUES_HIDDEN_KEY, hidden ? "1" : "0");
+}
+
+function parseStatValue(raw) {
+    if (raw === undefined || raw === null || raw === "") return 0;
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : 0;
+}
+
 function isAuthenticated() {
     return Boolean(getToken());
 }
@@ -134,6 +150,9 @@ window.AntorAPI = {
     saveRememberLogin,
     getRememberLogin,
     clearSession,
+    areVendasValuesHidden,
+    setVendasValuesHidden,
+    parseStatValue,
     isAuthenticated,
     apiFetch,
     requireAuth,

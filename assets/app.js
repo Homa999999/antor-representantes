@@ -18,10 +18,41 @@ function formatNumberBR(value) {
     return decimalFormatter.format(Number(value) || 0);
 }
 
+function renderStatFinalValue(el, targetValue = null) {
+    if (!el) return;
+
+    cancelCounterAnimation(el);
+
+    const raw = targetValue != null ? targetValue : el.dataset.count;
+    const value = typeof AntorAPI !== "undefined" ? AntorAPI.parseStatValue(raw) : Number(raw || 0);
+    const safeValue = Number.isFinite(value) ? value : 0;
+    const format = el.dataset.format || "";
+    const prefix = el.dataset.prefix || "";
+    const suffix = el.dataset.suffix || "";
+
+    if (format === "currency") {
+        el.textContent = formatMoneyBRL(safeValue);
+        return;
+    }
+
+    if (format === "decimal") {
+        el.textContent = prefix + formatNumberBR(safeValue) + suffix;
+        return;
+    }
+
+    el.textContent = prefix + Math.round(safeValue) + suffix;
+}
+
 function animateCounter(el, target, prefix = "", suffix = "", duration = 1400) {
     if (el._counterFrame) {
         cancelAnimationFrame(el._counterFrame);
         el._counterFrame = null;
+    }
+
+    const safeTarget = Number(target);
+    if (!Number.isFinite(safeTarget)) {
+        renderStatFinalValue(el, 0);
+        return;
     }
 
     const format = el.dataset.format || "";
@@ -44,7 +75,7 @@ function animateCounter(el, target, prefix = "", suffix = "", duration = 1400) {
     function tick(now) {
         const progress = Math.min((now - start) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
-        const current = target * eased;
+        const current = safeTarget * eased;
 
         renderValue(current);
 
@@ -66,6 +97,7 @@ function cancelCounterAnimation(el) {
 
 window.animateCounter = animateCounter;
 window.cancelCounterAnimation = cancelCounterAnimation;
+window.renderStatFinalValue = renderStatFinalValue;
 window.formatMoneyBRL = formatMoneyBRL;
 window.formatNumberBR = formatNumberBR;
 

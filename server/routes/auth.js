@@ -1,6 +1,6 @@
 const express = require("express");
 const {
-    isActiveUsuario,
+    isUsuarioDesativado,
     hasWebPassword,
     getUserEmail,
     maskEmail,
@@ -29,15 +29,48 @@ const { sendAccessCodeEmail } = require("../services/mail");
 
 const router = express.Router();
 
-const WEB_ACCESS_DENIED = "Seu usuário não possui permissão para acessar o sistema web.";
+const AUTH_ERRORS = {
+    MISSING_EMAIL: "Informe o e-mail corporativo.",
+    MISSING_PASSWORD: "Informe a senha.",
+    USER_NOT_FOUND: "E-mail corporativo não encontrado.",
+    USER_DEACTIVATED: "Usuário desativado.",
+    INVALID_PASSWORD: "Senha inválida.",
+    WEB_ACCESS_DENIED: "Seu usuário não possui permissão para acessar o sistema web.",
+    SERVER_LOGIN: "Erro ao validar login. Tente novamente em instantes.",
+    SERVER_SETUP: "Erro ao configurar acesso. Tente novamente em instantes.",
+    SERVER_RESET: "Erro ao recuperar senha. Tente novamente em instantes.",
+    INVALID_EMAIL: "Informe um e-mail válido.",
+    EMAIL_MISMATCH: "O e-mail informado não confere com o cadastro corporativo.",
+    EMAIL_SEND_FAILED: "Não foi possível enviar o e-mail com o código. Tente novamente em instantes.",
+    SETUP_NOT_ALLOWED: "Não é possível configurar este usuário.",
+    RESET_NOT_ALLOWED: "Não é possível redefinir a senha deste usuário.",
+    RESET_NO_PASSWORD: "Este usuário ainda não possui senha web. Faça login para configurar o primeiro acesso.",
+    SESSION_EXPIRED: "Sessão expirada. Faça login novamente.",
+    CODE_EXPIRED: "Código expirado. Faça login novamente.",
+    CODE_INVALID: "Código inválido.",
+    SETUP_SESSION_INVALID: "Sessão de configuração inválida.",
+    RESET_SESSION_INVALID: "Sessão de redefinição inválida.",
+    PASSWORD_TOO_SHORT: "A senha deve ter pelo menos 6 caracteres.",
+    PASSWORD_MISMATCH: "As senhas não conferem.",
+    PASSWORD_ALREADY_SET: "Este usuário já possui senha web cadastrada.",
+    USE_FIRST_ACCESS: "Use o fluxo de primeiro acesso para definir a senha.",
+    USER_INVALID: "Usuário inválido.",
+    RESEND_NOT_ALLOWED: "Não é possível reenviar o código para este usuário.",
+};
+
+const WEB_ACCESS_DENIED = AUTH_ERRORS.WEB_ACCESS_DENIED;
+
+function loginError(res, status, code) {
+    return res.status(status).json({ error: AUTH_ERRORS[code], code });
+}
 
 async function sendVerificationCode(user, email, res, { createToken, emailContext }) {
     if (!isValidEmail(email)) {
-        return res.status(400).json({ error: "Informe um e-mail válido." });
+        return res.status(400).json({ error: AUTH_ERRORS.INVALID_EMAIL, code: "INVALID_EMAIL" });
     }
 
     if (!matchesUsuarioCorporativo(user, email)) {
-        return res.status(403).json({ error: "O e-mail informado não confere com o cadastro corporativo." });
+        return res.status(403).json({ error: AUTH_ERRORS.EMAIL_MISMATCH, code: "EMAIL_MISMATCH" });
     }
 
     const code = generateCode();
@@ -52,7 +85,8 @@ async function sendVerificationCode(user, email, res, { createToken, emailContex
     } catch (err) {
         console.error("Erro ao enviar e-mail:", err.message);
         return res.status(503).json({
-            error: "Não foi possível enviar o e-mail com o código. Tente novamente em instantes.",
+            error: AUTH_ERRORS.EMAIL_SEND_FAILED,
+            code: "EMAIL_SEND_FAILED",
         });
     }
 
@@ -86,19 +120,23 @@ router.post("/login", async (req, res) => {
     const remember = Boolean(lembrar);
 
     if (!usuario?.trim()) {
-        return res.status(400).json({ error: "Informe o e-mail corporativo." });
+        return loginError(res, 400, "MISSING_EMAIL");
     }
 
     try {
         const user = await findUsuarioByLogin(usuario);
 
-        if (!user || !isActiveUsuario(user)) {
-            return res.status(401).json({ error: "Usuário ou senha inválidos." });
+        if (!user) {
+            return loginError(res, 401, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
         }
 
         if (!hasWebPassword(user)) {
             if (!canAccessWebSystem(user)) {
-                return res.status(403).json({ error: WEB_ACCESS_DENIED });
+                return loginError(res, 403, "WEB_ACCESS_DENIED");
             }
 
             const existingEmail = String(user.usuario_corporativo || "").trim() || getUserEmail(user);
@@ -112,12 +150,12 @@ router.post("/login", async (req, res) => {
         }
 
         if (!senha?.trim()) {
-            return res.status(400).json({ error: "Informe a senha." });
+            return loginError(res, 400, "MISSING_PASSWORD");
         }
 
         const passwordCheck = await verifyWebPassword(senha, user.usuario_senha_web);
         if (!passwordCheck.ok) {
-            return res.status(401).json({ error: "Usuário ou senha inválidos." });
+            return loginError(res, 401, "INVALID_PASSWORD");
         }
 
         if (passwordCheck.needsUpgrade) {
@@ -129,7 +167,7 @@ router.post("/login", async (req, res) => {
         }
 
         if (!canAccessWebSystem(user)) {
-            return res.status(403).json({ error: WEB_ACCESS_DENIED });
+            return loginError(res, 403, "WEB_ACCESS_DENIED");
         }
 
         const token = createSessionToken(user, remember);
@@ -140,7 +178,7 @@ router.post("/login", async (req, res) => {
         });
     } catch (err) {
         console.error("Erro no login:", err.message);
-        res.status(500).json({ error: "Erro ao validar login. Verifique a conexão com o banco." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_LOGIN, code: "SERVER_LOGIN" });
     }
 });
 
@@ -148,24 +186,32 @@ router.post("/primeiro-acesso/enviar-codigo", async (req, res) => {
     const { pendingToken, email } = req.body || {};
 
     if (!pendingToken || !email?.trim()) {
-        return res.status(400).json({ error: "Informe o e-mail." });
+        return loginError(res, 400, "MISSING_EMAIL");
     }
 
     try {
         const payload = verifyPendingSetupToken(pendingToken);
         const user = await findUsuarioById(payload.userId);
 
-        if (!user || !isActiveUsuario(user) || hasWebPassword(user)) {
-            return res.status(400).json({ error: "Não é possível configurar este usuário." });
+        if (!user) {
+            return loginError(res, 400, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
+        }
+
+        if (hasWebPassword(user)) {
+            return res.status(400).json({ error: AUTH_ERRORS.PASSWORD_ALREADY_SET, code: "PASSWORD_ALREADY_SET" });
         }
 
         return sendSetupCode(user, email, res);
     } catch (err) {
         if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
-            return res.status(401).json({ error: "Sessão expirada. Faça login novamente." });
+            return loginError(res, 401, "SESSION_EXPIRED");
         }
         console.error("Erro ao enviar código:", err.message);
-        res.status(500).json({ error: "Erro ao enviar código." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_SETUP, code: "SERVER_SETUP" });
     }
 });
 
@@ -173,20 +219,28 @@ router.post("/primeiro-acesso/reenviar", async (req, res) => {
     const { setupToken } = req.body || {};
 
     if (!setupToken) {
-        return res.status(400).json({ error: "Sessão de configuração inválida." });
+        return loginError(res, 400, "SETUP_SESSION_INVALID");
     }
 
     try {
         const payload = verifySetupToken(setupToken);
         const user = await findUsuarioById(payload.userId);
 
-        if (!user || !isActiveUsuario(user) || hasWebPassword(user) || !payload.email) {
-            return res.status(400).json({ error: "Não é possível reenviar o código para este usuário." });
+        if (!user) {
+            return loginError(res, 400, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
+        }
+
+        if (hasWebPassword(user) || !payload.email) {
+            return loginError(res, 400, "RESEND_NOT_ALLOWED");
         }
 
         return sendSetupCode(user, payload.email, res);
     } catch {
-        return res.status(401).json({ error: "Código expirado. Faça login novamente." });
+        return loginError(res, 401, "CODE_EXPIRED");
     }
 });
 
@@ -194,40 +248,47 @@ router.post("/primeiro-acesso/definir-senha", async (req, res) => {
     const { setupToken, codigo, senha, confirmarSenha } = req.body || {};
 
     if (!setupToken || !codigo?.trim() || !senha || !confirmarSenha) {
-        return res.status(400).json({ error: "Preencha o código e a nova senha." });
+        return res.status(400).json({
+            error: "Preencha o código e a nova senha.",
+            code: "MISSING_FIELDS",
+        });
     }
 
     const senhaNormalizada = normalizeWebPassword(senha);
     const confirmarNormalizada = normalizeWebPassword(confirmarSenha);
 
     if (senhaNormalizada.length < 6) {
-        return res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres." });
+        return loginError(res, 400, "PASSWORD_TOO_SHORT");
     }
 
     if (senhaNormalizada !== confirmarNormalizada) {
-        return res.status(400).json({ error: "As senhas não conferem." });
+        return loginError(res, 400, "PASSWORD_MISMATCH");
     }
 
     try {
         const payload = verifySetupToken(setupToken);
 
         if (String(payload.code) !== String(codigo).trim()) {
-            return res.status(401).json({ error: "Código inválido." });
+            return loginError(res, 401, "CODE_INVALID");
         }
 
         const user = await findUsuarioById(payload.userId);
-        if (!user || !isActiveUsuario(user)) {
-            return res.status(401).json({ error: "Usuário inválido." });
+        if (!user) {
+            return loginError(res, 401, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
         }
 
         if (hasWebPassword(user)) {
-            return res.status(400).json({ error: "Este usuário já possui senha web cadastrada." });
+            return res.status(400).json({ error: AUTH_ERRORS.PASSWORD_ALREADY_SET, code: "PASSWORD_ALREADY_SET" });
         }
 
         await saveWebPassword(user.usuario_id, senhaNormalizada, payload.email);
 
         if (!canAccessWebSystem(user)) {
-            return res.status(403).json({ error: WEB_ACCESS_DENIED });
+            return loginError(res, 403, "WEB_ACCESS_DENIED");
         }
 
         const token = createSessionToken(user);
@@ -239,13 +300,13 @@ router.post("/primeiro-acesso/definir-senha", async (req, res) => {
         });
     } catch (err) {
         if (err.name === "TokenExpiredError") {
-            return res.status(401).json({ error: "Código expirado. Faça login novamente." });
+            return loginError(res, 401, "CODE_EXPIRED");
         }
         if (err.name === "JsonWebTokenError") {
-            return res.status(401).json({ error: "Sessão de configuração inválida." });
+            return loginError(res, 401, "SETUP_SESSION_INVALID");
         }
         console.error("Erro ao definir senha:", err.message);
-        res.status(500).json({ error: "Erro ao definir senha." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_SETUP, code: "SERVER_SETUP" });
     }
 });
 
@@ -253,19 +314,24 @@ router.post("/esqueci-senha/iniciar", async (req, res) => {
     const { usuario } = req.body || {};
 
     if (!usuario?.trim()) {
-        return res.status(400).json({ error: "Informe o e-mail corporativo." });
+        return loginError(res, 400, "MISSING_EMAIL");
     }
 
     try {
         const user = await findUsuarioByLogin(usuario);
 
-        if (!user || !isActiveUsuario(user)) {
-            return res.status(401).json({ error: "E-mail não encontrado ou inválido." });
+        if (!user) {
+            return loginError(res, 401, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
         }
 
         if (!hasWebPassword(user)) {
             return res.status(403).json({
-                error: "Este usuário ainda não possui senha web. Faça login para configurar o primeiro acesso.",
+                error: AUTH_ERRORS.RESET_NO_PASSWORD,
+                code: "RESET_NO_PASSWORD",
             });
         }
 
@@ -280,7 +346,7 @@ router.post("/esqueci-senha/iniciar", async (req, res) => {
         });
     } catch (err) {
         console.error("Erro ao iniciar recuperação:", err.message);
-        res.status(500).json({ error: "Erro ao iniciar recuperação de senha." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_RESET, code: "SERVER_RESET" });
     }
 });
 
@@ -288,24 +354,32 @@ router.post("/esqueci-senha/enviar-codigo", async (req, res) => {
     const { pendingToken, email } = req.body || {};
 
     if (!pendingToken || !email?.trim()) {
-        return res.status(400).json({ error: "Informe o e-mail." });
+        return loginError(res, 400, "MISSING_EMAIL");
     }
 
     try {
         const payload = verifyPendingResetToken(pendingToken);
         const user = await findUsuarioById(payload.userId);
 
-        if (!user || !isActiveUsuario(user) || !hasWebPassword(user)) {
-            return res.status(400).json({ error: "Não é possível redefinir a senha deste usuário." });
+        if (!user) {
+            return loginError(res, 400, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
+        }
+
+        if (!hasWebPassword(user)) {
+            return res.status(400).json({ error: AUTH_ERRORS.RESET_NO_PASSWORD, code: "RESET_NO_PASSWORD" });
         }
 
         return sendResetCode(user, email, res);
     } catch (err) {
         if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
-            return res.status(401).json({ error: "Sessão expirada. Tente novamente." });
+            return loginError(res, 401, "SESSION_EXPIRED");
         }
         console.error("Erro ao enviar código:", err.message);
-        res.status(500).json({ error: "Erro ao enviar código." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_RESET, code: "SERVER_RESET" });
     }
 });
 
@@ -313,20 +387,28 @@ router.post("/esqueci-senha/reenviar", async (req, res) => {
     const { setupToken } = req.body || {};
 
     if (!setupToken) {
-        return res.status(400).json({ error: "Sessão de redefinição inválida." });
+        return loginError(res, 400, "RESET_SESSION_INVALID");
     }
 
     try {
         const payload = verifyResetToken(setupToken);
         const user = await findUsuarioById(payload.userId);
 
-        if (!user || !isActiveUsuario(user) || !hasWebPassword(user) || !payload.email) {
-            return res.status(400).json({ error: "Não é possível reenviar o código para este usuário." });
+        if (!user) {
+            return loginError(res, 400, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
+        }
+
+        if (!hasWebPassword(user) || !payload.email) {
+            return loginError(res, 400, "RESEND_NOT_ALLOWED");
         }
 
         return sendResetCode(user, payload.email, res);
     } catch {
-        return res.status(401).json({ error: "Código expirado. Tente novamente." });
+        return loginError(res, 401, "CODE_EXPIRED");
     }
 });
 
@@ -334,40 +416,47 @@ router.post("/esqueci-senha/redefinir-senha", async (req, res) => {
     const { setupToken, codigo, senha, confirmarSenha } = req.body || {};
 
     if (!setupToken || !codigo?.trim() || !senha || !confirmarSenha) {
-        return res.status(400).json({ error: "Preencha o código e a nova senha." });
+        return res.status(400).json({
+            error: "Preencha o código e a nova senha.",
+            code: "MISSING_FIELDS",
+        });
     }
 
     const senhaNormalizada = normalizeWebPassword(senha);
     const confirmarNormalizada = normalizeWebPassword(confirmarSenha);
 
     if (senhaNormalizada.length < 6) {
-        return res.status(400).json({ error: "A senha deve ter pelo menos 6 caracteres." });
+        return loginError(res, 400, "PASSWORD_TOO_SHORT");
     }
 
     if (senhaNormalizada !== confirmarNormalizada) {
-        return res.status(400).json({ error: "As senhas não conferem." });
+        return loginError(res, 400, "PASSWORD_MISMATCH");
     }
 
     try {
         const payload = verifyResetToken(setupToken);
 
         if (String(payload.code) !== String(codigo).trim()) {
-            return res.status(401).json({ error: "Código inválido." });
+            return loginError(res, 401, "CODE_INVALID");
         }
 
         const user = await findUsuarioById(payload.userId);
-        if (!user || !isActiveUsuario(user)) {
-            return res.status(401).json({ error: "Usuário inválido." });
+        if (!user) {
+            return loginError(res, 401, "USER_NOT_FOUND");
+        }
+
+        if (isUsuarioDesativado(user)) {
+            return loginError(res, 403, "USER_DEACTIVATED");
         }
 
         if (!hasWebPassword(user)) {
-            return res.status(400).json({ error: "Use o fluxo de primeiro acesso para definir a senha." });
+            return res.status(400).json({ error: AUTH_ERRORS.USE_FIRST_ACCESS, code: "USE_FIRST_ACCESS" });
         }
 
         await upgradeWebPasswordHash(user.usuario_id, senhaNormalizada);
 
         if (!canAccessWebSystem(user)) {
-            return res.status(403).json({ error: WEB_ACCESS_DENIED });
+            return loginError(res, 403, "WEB_ACCESS_DENIED");
         }
 
         const token = createSessionToken(user);
@@ -379,13 +468,13 @@ router.post("/esqueci-senha/redefinir-senha", async (req, res) => {
         });
     } catch (err) {
         if (err.name === "TokenExpiredError") {
-            return res.status(401).json({ error: "Código expirado. Tente novamente." });
+            return loginError(res, 401, "CODE_EXPIRED");
         }
         if (err.name === "JsonWebTokenError") {
-            return res.status(401).json({ error: "Sessão de redefinição inválida." });
+            return loginError(res, 401, "RESET_SESSION_INVALID");
         }
         console.error("Erro ao redefinir senha:", err.message);
-        res.status(500).json({ error: "Erro ao redefinir senha." });
+        res.status(500).json({ error: AUTH_ERRORS.SERVER_RESET, code: "SERVER_RESET" });
     }
 });
 

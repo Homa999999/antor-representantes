@@ -48,8 +48,19 @@ async function verifyWebPassword(plain, stored) {
     return { ok, needsUpgrade: ok };
 }
 
+function isUsuarioDesativado(row) {
+    if (!row) return false;
+
+    const ativado = String(row.usuario_ativado ?? "S").trim().toUpperCase();
+    if (["N", "0", "F"].includes(ativado)) return true;
+
+    if (row.usuario_ativo === false) return true;
+
+    return false;
+}
+
 function isActiveUsuario(row) {
-    return row && !["N", "0", "F"].includes(String(row.usuario_ativado || "S").trim().toUpperCase());
+    return row && !isUsuarioDesativado(row);
 }
 
 function getRepresentanteId(row) {
@@ -77,6 +88,7 @@ const USUARIO_ACCESS_FIELDS = `
     usuario_codigo,
     usuario_representante_id,
     usuario_ativado,
+    usuario_ativo,
     usuario_senha_web,
     usuario_email,
     usuario_corporativo,
@@ -271,6 +283,7 @@ function publicUser(user) {
 
 module.exports = {
     isActiveUsuario,
+    isUsuarioDesativado,
     getRepresentanteId,
     hasWebFullAccess,
     canAccessWebSystem,

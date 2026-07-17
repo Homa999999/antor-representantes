@@ -67,7 +67,7 @@ linkEsqueci.addEventListener("click", async (e) => {
     try {
         const { response, data } = await postAuth("/auth/esqueci-senha/iniciar", { usuario });
         if (!response.ok) {
-            showLoginError(data.error || "Não foi possível iniciar a recuperação.");
+            showLoginError(resolveAuthError(data, "Não foi possível iniciar a recuperação."));
             return;
         }
         showEmailStep(data);
@@ -116,6 +116,10 @@ function showLoginError(message) {
     if (!loginError) return;
     loginError.textContent = message;
     loginError.hidden = !message;
+}
+
+function resolveAuthError(data, fallback) {
+    return data?.error || fallback;
 }
 
 function showStepError(el, message) {
@@ -233,7 +237,7 @@ form.addEventListener("submit", async (e) => {
         }
 
         if (!response.ok) {
-            showLoginError(data.error || "Não foi possível entrar.");
+            showLoginError(resolveAuthError(data, "Não foi possível entrar."));
             setLoading(false);
             return;
         }
@@ -263,7 +267,7 @@ formSetupEmail?.addEventListener("submit", async (e) => {
         try {
             const { response, data } = await postAuth(paths.iniciar, { usuario: email });
             if (!response.ok) {
-                showStepError(modalSetupErrorEmail, data.error || "Não foi possível iniciar a recuperação.");
+                showStepError(modalSetupErrorEmail, resolveAuthError(data, "Não foi possível iniciar a recuperação."));
                 btnEnviarCodigo.disabled = false;
                 return;
             }
@@ -290,7 +294,7 @@ formSetupEmail?.addEventListener("submit", async (e) => {
         });
 
         if (!response.ok) {
-            showStepError(modalSetupErrorEmail, data.error || "Não foi possível enviar o código.");
+            showStepError(modalSetupErrorEmail, resolveAuthError(data, "Não foi possível enviar o código."));
             btnEnviarCodigo.disabled = false;
             return;
         }
@@ -330,10 +334,12 @@ formSetup?.addEventListener("submit", async (e) => {
         if (!response.ok) {
             showStepError(
                 modalSetupError,
-                data.error ||
-                    (flowMode === "reset"
+                resolveAuthError(
+                    data,
+                    flowMode === "reset"
                         ? "Não foi possível redefinir a senha."
-                        : "Não foi possível definir a senha.")
+                        : "Não foi possível definir a senha."
+                )
             );
             btnSetupSubmit.disabled = false;
             return;
@@ -362,7 +368,7 @@ btnSetupReenviar?.addEventListener("click", async () => {
         if (data.setupToken) {
             showCodeStep(data);
         } else if (!response.ok) {
-            showStepError(modalSetupError, data.error || "Não foi possível reenviar o código.");
+            showStepError(modalSetupError, resolveAuthError(data, "Não foi possível reenviar o código."));
         }
     } catch {
         showStepError(modalSetupError, "Erro ao reenviar código.");

@@ -51,19 +51,48 @@
                     <div class="filtros-grid-rep-periodo">
                         <div class="campo-filtro">
                             <label for="representante">Representante</label>
-                            <div class="input-busca">
-                                <input type="text" id="representante" name="representante" placeholder="Buscar representante...">
-                                <button type="button" class="btn-busca" aria-label="Buscar representante">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
+                            <div class="rep-picker" id="rep-picker">
+                                <div class="input-busca rep-picker-trigger">
+                                    <input
+                                        type="text"
+                                        id="representante"
+                                        name="representante"
+                                        placeholder="Selecione o representante..."
+                                        autocomplete="off"
+                                        role="combobox"
+                                        aria-expanded="false"
+                                        aria-controls="rep-picker-panel"
+                                    >
+                                    <button type="button" class="btn-busca rep-picker-toggle" id="rep-picker-toggle" aria-label="Abrir lista de representantes">
+                                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="rep-picker-panel" id="rep-picker-panel" hidden>
+                                    <div class="rep-picker-search">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input
+                                            type="search"
+                                            id="rep-picker-search"
+                                            placeholder="Buscar representante..."
+                                            autocomplete="off"
+                                        >
+                                    </div>
+                                    <ul class="rep-picker-list" id="rep-picker-list" role="listbox"></ul>
+                                    <div class="rep-picker-footer">
+                                        <span id="rep-picker-count">0 representantes</span>
+                                        <button type="button" class="rep-picker-more" id="rep-picker-more" hidden>
+                                            Carregar mais
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="campo-filtro">
                             <label>Período</label>
                             <div class="periodo-ate">
-                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="2026-07-01">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" min="1990-01-01">
                                 <span>Até</span>
-                                <input type="date" id="periodo-fim" name="periodo_fim" value="2026-07-31">
+                                <input type="date" id="periodo-fim" name="periodo_fim" min="1990-01-01">
                             </div>
                         </div>
                     </div>
@@ -105,6 +134,20 @@
                     <small>Os dados serão carregados do banco de dados.</small>
                     </div>
                 </div>
+                <nav class="comissao-pagination" id="comissao-pagination" aria-label="Paginação de resultados" hidden>
+                    <span class="comissao-pagination-info" id="comissao-pagination-info"></span>
+                    <div class="comissao-pagination-actions">
+                        <button type="button" class="comissao-page-btn" id="comissao-prev" disabled>
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            Anterior
+                        </button>
+                        <span class="comissao-page-current" id="comissao-page-current">Página 1 de 1</span>
+                        <button type="button" class="comissao-page-btn" id="comissao-next" disabled>
+                            Próxima
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </nav>
                 <div class="resultados-footer">
                     <div class="footer-info">
                         <i class="fa-solid fa-percent"></i>

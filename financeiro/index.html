@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/reset.css">
+    <link rel="stylesheet" href="../assets/antd-date-picker.css">
+    <link rel="stylesheet" href="../assets/antd-select.css">
     <link rel="stylesheet" href="financeiro.css">
 </head>
 <body>
@@ -68,26 +71,88 @@
                         <div class="campo-filtro">
                             <label>Período</label>
                             <div class="periodo-ate">
-                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="1899-01-01">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="1899-01-01" data-date-placeholder="Início">
                                 <span>Até</span>
-                                <input type="date" id="periodo-fim" name="periodo_fim" value="2999-12-31">
+                                <input type="date" id="periodo-fim" name="periodo_fim" value="2999-12-31" data-date-placeholder="Fim">
                             </div>
                         </div>
                     </div>
 
-                    <div class="filtros-grid filtros-grid-1">
+                    <div class="filtros-grid filtros-grid-2">
                         <div class="campo-filtro">
-                            <label for="cliente">Selecione cliente</label>
-                            <div class="input-busca">
-                                <input
-                                    type="text"
-                                    id="cliente"
-                                    name="cliente"
-                                    placeholder="Informe um cliente, se não sua pesquisa não será realizada."
-                                >
-                                <button type="button" class="btn-busca" aria-label="Buscar cliente">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                </button>
+                            <label for="representante">Representante</label>
+                            <div class="rep-picker" id="rep-picker">
+                                <div class="input-busca rep-picker-trigger">
+                                    <input
+                                        type="text"
+                                        id="representante"
+                                        name="representante"
+                                        placeholder="Selecione o representante..."
+                                        autocomplete="off"
+                                        role="combobox"
+                                        aria-expanded="false"
+                                        aria-controls="rep-picker-panel"
+                                    >
+                                    <button type="button" class="btn-busca rep-picker-toggle" id="rep-picker-toggle" aria-label="Abrir lista de representantes">
+                                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="rep-picker-panel" id="rep-picker-panel" hidden>
+                                    <div class="rep-picker-search">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input
+                                            type="search"
+                                            id="rep-picker-search"
+                                            placeholder="Buscar representante..."
+                                            autocomplete="off"
+                                        >
+                                    </div>
+                                    <ul class="rep-picker-list" id="rep-picker-list" role="listbox"></ul>
+                                    <div class="rep-picker-footer">
+                                        <span id="rep-picker-count">0 representantes</span>
+                                        <button type="button" class="rep-picker-more" id="rep-picker-more" hidden>
+                                            Carregar mais
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="campo-filtro">
+                            <label for="cliente">Cliente</label>
+                            <div class="rep-picker client-picker" id="client-picker">
+                                <div class="input-busca rep-picker-trigger">
+                                    <input
+                                        type="text"
+                                        id="cliente"
+                                        name="cliente"
+                                        placeholder="Todos os clientes"
+                                        autocomplete="off"
+                                        role="combobox"
+                                        aria-expanded="false"
+                                        aria-controls="client-picker-panel"
+                                    >
+                                    <button type="button" class="btn-busca rep-picker-toggle" id="client-picker-toggle" aria-label="Abrir lista de clientes">
+                                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <div class="rep-picker-panel" id="client-picker-panel" hidden>
+                                    <div class="rep-picker-search">
+                                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                        <input
+                                            type="search"
+                                            id="client-picker-search"
+                                            placeholder="Buscar cliente..."
+                                            autocomplete="off"
+                                        >
+                                    </div>
+                                    <ul class="rep-picker-list" id="client-picker-list" role="listbox"></ul>
+                                    <div class="rep-picker-footer">
+                                        <span id="client-picker-count">0 clientes</span>
+                                        <button type="button" class="rep-picker-more" id="client-picker-more" hidden>
+                                            Carregar mais
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,6 +226,15 @@
 
     <script src="../assets/api.js"></script>
     <script src="../assets/list-utils.js"></script>
+    <script src="../assets/rep-picker.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/locale/pt-br.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/antd-with-locales.min.js"></script>
+    <script defer src="../assets/antd-date-picker.js"></script>
+    <script defer src="../assets/antd-select.js"></script>
+    <script src="../assets/antor-toast.js"></script>
     <script src="../assets/app.js" defer></script>
     <script src="financeiro.js" defer></script>
 

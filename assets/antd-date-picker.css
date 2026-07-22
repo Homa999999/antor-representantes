@@ -1,0 +1,28 @@
+.antor-date-wrap {
+    width: 100%;
+    min-width: 0;
+}
+
+.antor-date-wrap .ant-picker {
+    width: 100%;
+    border-radius: var(--radius-sm, 10px);
+}
+
+.antor-date-wrap .ant-picker:hover {
+    border-color: #ffe566;
+}
+
+.antor-date-wrap .ant-picker-focused {
+    border-color: var(--primary, #ffcf00);
+    box-shadow: 0 0 0 4px rgba(255, 207, 0, 0.2);
+}
+
+.periodo-inputs .antor-date-wrap,
+.periodo-ate .antor-date-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.pedido-drawer .ant-picker-dropdown {
+    z-index: 450;
+}

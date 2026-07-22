@@ -14,20 +14,16 @@
 </head>
 <body>
 
-    <div class="bg-shapes" aria-hidden="true">
-        <span class="shape shape-1"></span>
-        <span class="shape shape-2"></span>
-        <span class="shape shape-3"></span>
-    </div>
-
-    <div class="container">
+    <div class="container" id="login-card">
 
         <div class="header">
             <div class="brand">
                 <img src="../assets/logo-horizontal.png" alt="Antor laminados sintéticos" class="brand-logo">
+                <span class="brand-accent" aria-hidden="true"></span>
             </div>
+            <span class="login-badge">Portal comercial</span>
             <h1>Acesso ao sistema</h1>
-            <p>Entre com suas credenciais para continuar.</p>
+            <p>Acompanhe pedidos, financeiro e comissões em um só lugar.</p>
         </div>
 
         <form id="form-login" novalidate>
@@ -45,6 +41,8 @@
                         name="usuario"
                         placeholder="seu.email@antor.com.br"
                         autocomplete="username"
+                        required
+                        aria-describedby="login-error"
                     >
                 </div>
             </div>
@@ -62,11 +60,17 @@
                         name="senha"
                         placeholder="Digite sua senha"
                         autocomplete="current-password"
+                        required
+                        aria-describedby="caps-hint login-error"
                     >
                     <button type="button" class="btn-toggle-senha" id="btn-toggle-senha" aria-label="Mostrar senha">
                         <i class="fa-solid fa-eye"></i>
                     </button>
                 </div>
+                <p class="caps-hint" id="caps-hint" hidden>
+                    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                    Caps Lock ativado
+                </p>
             </div>
 
             <div class="form-opcoes">
@@ -78,23 +82,35 @@
                 <a href="#" class="link-esqueci" id="link-esqueci">Esqueci minha senha</a>
             </div>
 
+            <div class="form-divider" aria-hidden="true">
+                <span>Continuar</span>
+            </div>
+
             <button type="submit" id="btn-entrar">
-                <i class="fa-solid fa-right-to-bracket"></i>
-                <span>Entrar</span>
+                <i class="fa-solid fa-right-to-bracket btn-entrar-icon" aria-hidden="true"></i>
+                <span class="btn-entrar-text">Entrar</span>
             </button>
 
-            <p class="login-error" id="login-error" hidden role="alert"></p>
+            <p class="login-error" id="login-error" hidden role="alert">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="login-error-text"></span>
+            </p>
 
         </form>
+
+        <footer class="login-footer">
+            <a href="privacidade.html" class="login-footer-link">Política de privacidade</a>
+            <a href="https://antor.com.br/" class="login-footer-brand" target="_blank" rel="noopener noreferrer">Antor &copy; 2026</a>
+        </footer>
 
     </div>
 
     <div class="modal-overlay" id="modal-setup" hidden aria-hidden="true">
-        <div class="modal-card" role="dialog" aria-labelledby="modal-setup-title" aria-modal="true">
+        <div class="modal-card" id="modal-setup-card" role="dialog" aria-labelledby="modal-setup-title" aria-modal="true">
             <button type="button" class="modal-close" id="modal-setup-close" aria-label="Fechar">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <div class="modal-icon" aria-hidden="true">
+            <div class="modal-icon" id="modal-setup-icon" aria-hidden="true">
                 <i class="fa-solid fa-envelope-circle-check"></i>
             </div>
             <h2 id="modal-setup-title">Primeiro acesso</h2>
@@ -102,6 +118,7 @@
                 Informe seu e-mail para receber o código de verificação.
             </p>
             <p class="modal-email" id="modal-setup-email"></p>
+            <p class="modal-step-label" id="modal-step-label" hidden>Passo 1 de 2</p>
 
             <div id="setup-step-email" class="modal-step">
                 <form id="form-setup-email" class="modal-form" novalidate>
@@ -109,7 +126,10 @@
                         <label for="setup-email">Seu e-mail</label>
                         <input type="email" id="setup-email" name="email" placeholder="nome@exemplo.com" autocomplete="email">
                     </div>
-                    <p class="modal-error" id="modal-setup-error-email" hidden role="alert"></p>
+                    <p class="modal-error" id="modal-setup-error-email" hidden role="alert">
+                        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                        <span></span>
+                    </p>
                     <button type="submit" class="btn-modal-submit" id="btn-enviar-codigo">
                         <i class="fa-solid fa-paper-plane"></i>
                         Enviar código
@@ -118,36 +138,55 @@
             </div>
 
             <div id="setup-step-code" class="modal-step" hidden>
-            <form id="form-setup" class="modal-form" novalidate>
-                <div class="campo">
-                    <label for="setup-codigo">Código recebido</label>
-                    <input type="text" id="setup-codigo" name="codigo" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
-                </div>
-                <div class="campo">
-                    <label for="setup-senha">Nova senha</label>
-                    <input type="password" id="setup-senha" name="senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
-                </div>
-                <div class="campo">
-                    <label for="setup-confirmar">Confirmar senha</label>
-                    <input type="password" id="setup-confirmar" name="confirmarSenha" placeholder="Repita a senha" autocomplete="new-password">
-                </div>
-                <p class="modal-error" id="modal-setup-error" hidden role="alert"></p>
-                <button type="submit" class="btn-modal-submit" id="btn-setup-submit">
-                    <i class="fa-solid fa-check"></i>
-                    <span id="btn-setup-submit-text">Definir senha e entrar</span>
-                </button>
-                <button type="button" class="btn-modal-link" id="btn-setup-reenviar">
-                    Reenviar código
-                </button>
-            </form>
+                <form id="form-setup" class="modal-form" novalidate>
+                    <div class="campo">
+                        <label id="setup-codigo-label">Código recebido</label>
+                        <div class="otp-inputs" id="setup-otp" role="group" aria-labelledby="setup-codigo-label">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" autocomplete="one-time-code" aria-label="Dígito 1" data-index="0">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 2" data-index="1">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 3" data-index="2">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 4" data-index="3">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 5" data-index="4">
+                            <input type="text" class="otp-digit" inputmode="numeric" maxlength="1" pattern="[0-9]" aria-label="Dígito 6" data-index="5">
+                        </div>
+                        <input type="hidden" id="setup-codigo" name="codigo">
+                    </div>
+                    <div class="campo">
+                        <label for="setup-senha">Nova senha</label>
+                        <input type="password" id="setup-senha" name="senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                        <div class="password-strength" id="setup-password-strength" aria-live="polite">
+                            <div class="password-strength-bars" aria-hidden="true">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <span class="password-strength-label">Digite uma senha</span>
+                        </div>
+                    </div>
+                    <div class="campo">
+                        <label for="setup-confirmar">Confirmar senha</label>
+                        <input type="password" id="setup-confirmar" name="confirmarSenha" placeholder="Repita a senha" autocomplete="new-password">
+                        <p class="password-match" id="setup-password-match" aria-live="polite"></p>
+                    </div>
+                    <p class="modal-error" id="modal-setup-error" hidden role="alert">
+                        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                        <span></span>
+                    </p>
+                    <button type="submit" class="btn-modal-submit" id="btn-setup-submit">
+                        <i class="fa-solid fa-check"></i>
+                        <span id="btn-setup-submit-text">Definir senha e entrar</span>
+                    </button>
+                    <button type="button" class="btn-modal-link" id="btn-setup-reenviar">
+                        Reenviar código
+                    </button>
+                </form>
             </div>
-        </div>
-    </div>
 
-    <div class="loading-overlay" id="loading-overlay" aria-live="polite" aria-busy="false">
-        <div class="loading-box">
-            <div class="spinner" aria-hidden="true"></div>
-            <p>Entrando no Antor...</p>
+            <div id="setup-step-success" class="modal-step modal-step-success" hidden>
+                <p class="modal-success-text">Senha definida com sucesso!</p>
+                <p class="modal-success-sub">Redirecionando para o painel...</p>
+            </div>
         </div>
     </div>
 

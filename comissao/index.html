@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/reset.css">
+    <link rel="stylesheet" href="../assets/antd-date-picker.css">
     <link rel="stylesheet" href="comissao.css">
 </head>
 <body>
@@ -90,9 +92,9 @@
                         <div class="campo-filtro">
                             <label>Período</label>
                             <div class="periodo-ate">
-                                <input type="date" id="periodo-inicio" name="periodo_inicio" min="1990-01-01">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" min="1990-01-01" data-date-placeholder="Início">
                                 <span>Até</span>
-                                <input type="date" id="periodo-fim" name="periodo_fim" min="1990-01-01">
+                                <input type="date" id="periodo-fim" name="periodo_fim" min="1990-01-01" data-date-placeholder="Fim">
                             </div>
                         </div>
                     </div>
@@ -106,32 +108,106 @@
                             <i class="fa-solid fa-print"></i>
                             Imprimir
                         </button>
+                        <button type="button" class="btn-download" id="btn-download">
+                            <i class="fa-solid fa-file-excel"></i>
+                            Baixar Excel
+                        </button>
                     </div>
 
                 </form>
             </div>
 
             <div class="card card-resultados animate-in delay-3">
+                <div class="comissao-print-header" aria-hidden="true">
+                    <div class="comissao-print-brand">
+                        <img src="../assets/logo-vertical.png" alt="Antor laminados sintéticos" class="comissao-print-logo">
+                        <span class="comissao-print-title">Relatório de Comissão</span>
+                    </div>
+                    <dl class="comissao-print-meta">
+                        <div>
+                            <dt>Período</dt>
+                            <dd id="print-periodo">—</dd>
+                        </div>
+                        <div>
+                            <dt>Registros</dt>
+                            <dd id="print-registros">—</dd>
+                        </div>
+                        <div>
+                            <dt>Emitido em</dt>
+                            <dd id="print-emissao">—</dd>
+                        </div>
+                    </dl>
+                </div>
+                <div class="comissao-print-sections" id="comissao-print-sections" aria-hidden="true"></div>
                 <div class="resultados-toolbar">
                     <h2><i class="fa-solid fa-file-invoice"></i> Resultados</h2>
-                    <span id="comissao-registros">0 registros</span>
+                    <div class="resultados-toolbar-actions">
+                        <div class="col-picker" id="col-picker">
+                            <button
+                                type="button"
+                                class="btn-col-picker"
+                                id="col-picker-toggle"
+                                aria-expanded="false"
+                                aria-controls="col-picker-panel"
+                                aria-haspopup="true"
+                            >
+                                <i class="fa-solid fa-table-columns" aria-hidden="true"></i>
+                                <span>Colunas</span>
+                                <span class="col-picker-badge" id="col-picker-badge" hidden></span>
+                                <i class="fa-solid fa-chevron-down col-picker-chevron" aria-hidden="true"></i>
+                            </button>
+                            <div class="col-picker-panel" id="col-picker-panel" hidden>
+                                <div class="col-picker-list" id="col-picker-list" role="group" aria-label="Colunas visíveis"></div>
+                                <div class="col-picker-footer">
+                                    <button type="button" class="col-picker-action" id="col-picker-default">Padrão</button>
+                                    <button type="button" class="col-picker-action" id="col-picker-all">Todas</button>
+                                </div>
+                            </div>
+                        </div>
+                        <span id="comissao-registros">0 registros</span>
+                    </div>
                 </div>
-                <div class="table-wrap">
+                <div class="table-wrap comissao-table-wrap" id="comissao-table-wrap">
                     <table class="comissao-table">
                         <thead>
                             <tr>
-                                <th>Representante</th>
-                                <th>Período</th>
-                                <th>Comissão</th>
+                                <th class="sortable sorted-desc" data-col="data" data-sort="data"><span class="screen-label">Data de pagamento</span><span class="print-label">Data pag.</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable print-only-col" data-col="emissao" data-sort="emissao"><span class="screen-label">Emissão</span><span class="print-label">Emissão</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable print-only-col" data-col="vencimento" data-sort="vencimento"><span class="screen-label">Vence em</span><span class="print-label">Vence em</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable" data-col="cliente" data-sort="cliente"><span class="screen-label">Cliente</span><span class="print-label">Cliente</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable" data-col="duplicata" data-sort="duplicata"><span class="screen-label">Duplicata</span><span class="print-label">Duplicata</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable print-only-col" data-col="atraso" data-sort="atraso"><span class="screen-label">Atraso</span><span class="print-label">Atr.</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable" data-col="valor" data-sort="valor"><span class="screen-label">Valor total</span><span class="print-label">Vlr total</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable print-only-col" data-col="ipi" data-sort="ipi"><span class="screen-label">IPI</span><span class="print-label">IPI</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable print-only-col" data-col="percentual" data-sort="percentual"><span class="screen-label">%</span><span class="print-label">%</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
+                                <th class="sortable" data-col="comissao" data-sort="comissao"><span class="screen-label">Comissão</span><span class="print-label">Comissão</span> <span class="sort-icons"><i class="fa-solid fa-caret-up"></i><i class="fa-solid fa-caret-down"></i></span></th>
                             </tr>
                         </thead>
                         <tbody id="comissao-tbody">
                         </tbody>
+                        <tfoot id="comissao-tfoot" hidden>
+                            <tr class="comissao-tfoot-row">
+                                <td data-col="data" class="comissao-tfoot-label">Total da página</td>
+                                <td data-col="emissao"></td>
+                                <td data-col="vencimento"></td>
+                                <td data-col="cliente"></td>
+                                <td data-col="duplicata"></td>
+                                <td data-col="atraso"></td>
+                                <td data-col="valor" class="col-valor" id="comissao-tfoot-venda">R$ 0,00</td>
+                                <td data-col="ipi" class="col-valor" id="comissao-tfoot-ipi">R$ 0,00</td>
+                                <td data-col="percentual"></td>
+                                <td data-col="comissao" class="col-valor" id="comissao-tfoot-comissao">R$ 0,00</td>
+                            </tr>
+                        </tfoot>
                     </table>
                     <div class="resultados-empty" id="resultados-empty">
                     <i class="fa-solid fa-percent"></i>
                     <p>Nenhum registro encontrado.</p>
                     <small>Os dados serão carregados do banco de dados.</small>
+                    </div>
+                    <div class="comissao-loading" id="comissao-loading" hidden aria-live="polite" aria-busy="false">
+                        <div class="comissao-spinner" aria-hidden="true"></div>
+                        <span>Carregando resultados...</span>
                     </div>
                 </div>
                 <nav class="comissao-pagination" id="comissao-pagination" aria-label="Paginação de resultados" hidden>
@@ -141,7 +217,19 @@
                             <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
                             Anterior
                         </button>
-                        <span class="comissao-page-current" id="comissao-page-current">Página 1 de 1</span>
+                        <div class="comissao-page-jump">
+                            <label class="comissao-page-jump-label" for="comissao-page-input">Página</label>
+                            <input
+                                type="number"
+                                id="comissao-page-input"
+                                class="comissao-page-input"
+                                min="1"
+                                value="1"
+                                inputmode="numeric"
+                                aria-label="Ir para página"
+                            >
+                            <span class="comissao-page-total" id="comissao-page-total">de 1</span>
+                        </div>
                         <button type="button" class="comissao-page-btn" id="comissao-next" disabled>
                             Próxima
                             <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
@@ -153,9 +241,15 @@
                         <i class="fa-solid fa-percent"></i>
                         <span id="comissao-count">0 registro(s).</span>
                     </div>
-                    <div class="total-wrap">
-                        <span class="total-label">Total</span>
-                        <span class="total-valor" id="comissao-total">R$ 0,00</span>
+                    <div class="footer-totais">
+                        <div class="total-wrap">
+                            <span class="total-label">Total vendas</span>
+                            <span class="total-valor" id="comissao-total-venda">R$ 0,00</span>
+                        </div>
+                        <div class="total-wrap">
+                            <span class="total-label">Total comissão</span>
+                            <span class="total-valor" id="comissao-total">R$ 0,00</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -164,8 +258,95 @@
 
     </div>
 
+    <div class="comissao-print-modal" id="comissao-print-modal" hidden aria-hidden="true">
+        <div class="comissao-print-modal-backdrop" id="comissao-print-modal-backdrop" aria-hidden="true"></div>
+        <div
+            class="comissao-print-modal-card"
+            id="comissao-print-modal-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="comissao-print-modal-title"
+        >
+            <button type="button" class="comissao-print-modal-close" id="comissao-print-modal-close" aria-label="Fechar">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <div class="comissao-print-modal-icon" aria-hidden="true">
+                <i class="fa-solid fa-print"></i>
+            </div>
+            <h2 id="comissao-print-modal-title">Imprimir relatório</h2>
+            <p class="comissao-print-modal-message" id="comissao-print-modal-message">Escolha o que deseja exportar. A ação só começa após confirmar.</p>
+            <fieldset class="comissao-print-scope" id="comissao-print-scope">
+                <legend class="sr-only">Escopo da exportação</legend>
+                <label class="comissao-print-scope-option">
+                    <input type="radio" name="print-scope" value="page" checked>
+                    <span class="comissao-print-scope-card">
+                        <span class="comissao-print-scope-title">Página atual</span>
+                        <span class="comissao-print-scope-desc" id="print-scope-page-desc">—</span>
+                    </span>
+                </label>
+                <label class="comissao-print-scope-option">
+                    <input type="radio" name="print-scope" value="all">
+                    <span class="comissao-print-scope-card">
+                        <span class="comissao-print-scope-title">Todas as páginas</span>
+                        <span class="comissao-print-scope-desc" id="print-scope-all-desc">—</span>
+                    </span>
+                </label>
+                <label class="comissao-print-scope-option">
+                    <input type="radio" name="print-scope" value="range">
+                    <span class="comissao-print-scope-card">
+                        <span class="comissao-print-scope-title">Páginas personalizadas</span>
+                        <span class="comissao-print-scope-desc" id="print-scope-range-desc">Defina o intervalo de páginas</span>
+                        <div class="comissao-print-scope-range" id="print-scope-range-fields">
+                            <div class="comissao-print-range-field">
+                                <label for="print-scope-from">De</label>
+                                <input
+                                    type="number"
+                                    id="print-scope-from"
+                                    class="comissao-print-range-input"
+                                    min="1"
+                                    value="1"
+                                    inputmode="numeric"
+                                    aria-label="Página inicial"
+                                >
+                            </div>
+                            <span class="comissao-print-range-sep">até</span>
+                            <div class="comissao-print-range-field">
+                                <label for="print-scope-to">Até</label>
+                                <input
+                                    type="number"
+                                    id="print-scope-to"
+                                    class="comissao-print-range-input"
+                                    min="1"
+                                    value="1"
+                                    inputmode="numeric"
+                                    aria-label="Página final"
+                                >
+                            </div>
+                        </div>
+                    </span>
+                </label>
+            </fieldset>
+            <div class="comissao-print-modal-actions">
+                <button type="button" class="btn-print-modal-cancel" id="comissao-print-modal-cancel">Cancelar</button>
+                <button type="button" class="btn-print-modal-confirm" id="comissao-print-modal-confirm">
+                    <i class="fa-solid fa-print" aria-hidden="true"></i>
+                    Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="../assets/api.js"></script>
     <script src="../assets/list-utils.js"></script>
+    <script src="../assets/rep-picker.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/locale/pt-br.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/antd-with-locales.min.js"></script>
+    <script defer src="../assets/antd-date-picker.js"></script>
+    <script src="../assets/antor-toast.js"></script>
     <script src="../assets/app.js" defer></script>
     <script src="comissao.js" defer></script>
 

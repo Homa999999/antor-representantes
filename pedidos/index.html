@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../assets/app.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/reset.css">
+    <link rel="stylesheet" href="../assets/antd-date-picker.css">
+    <link rel="stylesheet" href="../assets/antd-select.css">
     <link rel="stylesheet" href="pedidos.css">
 </head>
 <body>
@@ -68,8 +71,8 @@
                         <div class="campo-filtro">
                             <label>Período</label>
                             <div class="periodo-inputs">
-                                <input type="date" id="periodo-inicio" name="periodo_inicio" value="2026-07-17">
-                                <input type="date" id="periodo-fim" name="periodo_fim" value="2026-07-17">
+                                <input type="date" id="periodo-inicio" name="periodo_inicio" data-date-placeholder="Início">
+                                <input type="date" id="periodo-fim" name="periodo_fim" data-date-placeholder="Fim">
                             </div>
                         </div>
                         <div class="campo-filtro">
@@ -161,8 +164,118 @@
 
     </div>
 
+    <div class="pedido-drawer-overlay" id="pedido-drawer-overlay" hidden aria-hidden="true">
+        <div class="pedido-drawer-backdrop" id="pedido-drawer-backdrop" aria-hidden="true"></div>
+        <aside
+            class="pedido-drawer"
+            id="pedido-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="pedido-drawer-title"
+        >
+            <header class="pedido-drawer-head">
+                <div class="pedido-drawer-head-text">
+                    <span class="pedido-drawer-badge"><i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i> Novo</span>
+                    <h2 id="pedido-drawer-title">Novo pedido</h2>
+                    <p>Preencha os dados e adicione os itens. A seleção de cliente e produtos será integrada em breve.</p>
+                </div>
+                <button type="button" class="pedido-drawer-close" id="pedido-drawer-close" aria-label="Fechar">
+                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <form class="pedido-drawer-body" id="form-novo-pedido" novalidate>
+                <section class="pedido-drawer-section" aria-labelledby="pedido-sec-dados">
+                    <h3 id="pedido-sec-dados"><i class="fa-solid fa-clipboard" aria-hidden="true"></i> Dados do pedido</h3>
+                    <div class="drawer-grid drawer-grid-2">
+                        <div class="campo-drawer">
+                            <label for="novo-cliente">Cliente</label>
+                            <div class="input-busca input-busca--pending">
+                                <input
+                                    type="text"
+                                    id="novo-cliente"
+                                    name="cliente"
+                                    placeholder="Digite ou busque o cliente..."
+                                    autocomplete="off"
+                                    required
+                                >
+                                <button type="button" class="btn-busca" disabled title="Seleção em breve" aria-label="Buscar cliente (em breve)">
+                                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                            <span class="campo-hint">Busca com lista será habilitada em breve.</span>
+                        </div>
+                        <div class="campo-drawer">
+                            <label for="novo-emissao">Emissão</label>
+                            <input
+                                type="date"
+                                id="novo-emissao"
+                                name="emissao"
+                                required
+                                data-popup-container="#pedido-drawer"
+                                data-date-placeholder="Data de emissão"
+                            >
+                        </div>
+                    </div>
+                    <div class="campo-drawer">
+                        <label for="novo-obs">Observações</label>
+                        <textarea
+                            id="novo-obs"
+                            name="observacoes"
+                            rows="3"
+                            placeholder="Informações adicionais sobre o pedido (opcional)"
+                        ></textarea>
+                    </div>
+                </section>
+
+                <section class="pedido-drawer-section" aria-labelledby="pedido-sec-itens">
+                    <div class="pedido-sec-head">
+                        <h3 id="pedido-sec-itens"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Itens do pedido</h3>
+                        <button type="button" class="btn-add-item" id="btn-add-item">
+                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                            Adicionar item
+                        </button>
+                    </div>
+                    <div class="pedido-itens" id="pedido-itens-list"></div>
+                </section>
+            </form>
+
+            <footer class="pedido-drawer-foot">
+                <div class="drawer-resumo">
+                    <div class="drawer-resumo-item">
+                        <span>Itens</span>
+                        <strong id="drawer-itens-count">0</strong>
+                    </div>
+                    <div class="drawer-resumo-item">
+                        <span>Metros</span>
+                        <strong id="drawer-metros-total">0,00</strong>
+                    </div>
+                    <div class="drawer-resumo-item drawer-resumo-item--valor">
+                        <span>Total estimado</span>
+                        <strong id="drawer-valor-total">0,00</strong>
+                    </div>
+                </div>
+                <div class="drawer-actions">
+                    <button type="button" class="btn-drawer-cancel" id="pedido-drawer-cancel">Cancelar</button>
+                    <button type="submit" class="btn-drawer-save" id="pedido-drawer-save" form="form-novo-pedido">
+                        <i class="fa-solid fa-check" aria-hidden="true"></i>
+                        Salvar pedido
+                    </button>
+                </div>
+            </footer>
+        </aside>
+    </div>
+
     <script src="../assets/api.js"></script>
     <script src="../assets/list-utils.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/locale/pt-br.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/antd@5.24.5/dist/antd-with-locales.min.js"></script>
+    <script defer src="../assets/antd-date-picker.js"></script>
+    <script defer src="../assets/antd-select.js"></script>
+    <script src="../assets/antor-toast.js"></script>
     <script src="../assets/app.js" defer></script>
     <script src="pedidos.js" defer></script>
 

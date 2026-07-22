@@ -217,7 +217,9 @@ async function loadHomeDashboard() {
         if (err.message.includes("autenticado") || err.message.includes("Sessão")) {
             AntorAPI.clearSession();
             AntorAPI.requireAuth();
+            return;
         }
+        AntorToast.error(err.message || "Erro ao carregar o painel.");
     } finally {
         mosaic?.classList.remove("is-loading");
     }

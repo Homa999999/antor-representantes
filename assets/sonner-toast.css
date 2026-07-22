@@ -1,0 +1,15 @@
+@import url("https://cdn.jsdelivr.net/npm/sonner@2.0.7/dist/styles.css");
+
+[data-sonner-toaster] {
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    z-index: 99999 !important;
+    pointer-events: none;
+}
+
+[data-sonner-toaster] [data-sonner-toast] {
+    pointer-events: auto;
+}
+
+[data-sonner-toast] {
+    border-radius: 12px !important;
+}

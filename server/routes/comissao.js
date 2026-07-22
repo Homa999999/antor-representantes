@@ -57,6 +57,9 @@ router.get("/", authMiddleware, async (req, res) => {
                 periodoFim: req.query.periodo_fim,
                 page: req.query.page,
                 limit: req.query.limit,
+                sort: req.query.sort,
+                order: req.query.order,
+                exportAll: req.query.export === "1",
                 debug: req.query.debug === "1",
             },
             req.user

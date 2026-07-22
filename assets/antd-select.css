@@ -1,0 +1,25 @@
+.antor-select-wrap {
+    width: 100%;
+    min-width: 0;
+}
+
+.antor-select-wrap .ant-select {
+    width: 100%;
+}
+
+.antor-select-wrap .ant-select-selector {
+    border-radius: var(--radius-sm, 10px) !important;
+}
+
+.antor-select-wrap .ant-select:hover .ant-select-selector {
+    border-color: #ffe566 !important;
+}
+
+.antor-select-wrap .ant-select-focused .ant-select-selector {
+    border-color: var(--primary, #ffcf00) !important;
+    box-shadow: 0 0 0 4px rgba(255, 207, 0, 0.2) !important;
+}
+
+.pedido-drawer .ant-select-dropdown {
+    z-index: 450;
+}
